@@ -1,8 +1,9 @@
 __author__ = 'hashbanger'
 
 import uuid
-from database import Database
 import datetime
+from database import Database
+
 
 class Post(object):
 
@@ -17,16 +18,16 @@ class Post(object):
     def save_to_mongo(self):
         Database.insert(collection = 'posts', data = self.json())
 
-    def get_from_mongo(self):
-        posts = Database.find(collection = 'posts', query = {})
-        for post in posts:
-            print('Blog_id: {}\nAuthor: {}\nTitle: {}\nContent: {}\nDate: {}\nID: {}'.format(post['blog_id'],
-                                                                                            post['author'],
-                                                                                            post['title'],
-                                                                                            post['content'],
-                                                                                            post['date'],
-                                                                                            post['id']))
-    
+    @classmethod
+    def get_from_mongo(cls, id):
+        posts = Database.find_one(collection = 'posts', query = {'id': id})
+        return cls(blog_id = post['blog_id'],
+                    author = post['author'],
+                    title = post['title'],
+                    content = post['content'],
+                    date = post['date'],
+                    id = post['id'])
+
     def json(self):
         return {'blog_id' : self.blog_id,
                 'author' : self.author,
@@ -35,3 +36,7 @@ class Post(object):
                 'date' : self.created_date,
                 'id' : self.id
                 }
+
+    @staticmethod
+    def from_blog(id):
+        return [post for post in Database.find(collection = 'posts', query = {'blog_id': id})]
